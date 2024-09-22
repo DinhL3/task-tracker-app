@@ -11,7 +11,10 @@ import {
   Button,
   MenuItem,
 } from '@mui/material';
-import { Menu as MenuIcon, PendingActions as PendingActionsIcon } from '@mui/icons-material';
+import {
+  Menu as MenuIcon,
+  PendingActions as PendingActionsIcon,
+} from '@mui/icons-material';
 
 // const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
@@ -75,7 +78,12 @@ function ResponsiveNavBar() {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar
+      position="static"
+      // sx={{
+      //   backgroundColor: '#6d6875',
+      // }}
+    >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           {/* Desktop nav bar logo and nav items from here */}
