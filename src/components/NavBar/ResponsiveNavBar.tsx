@@ -18,7 +18,7 @@ import {
 
 // const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-function ResponsiveNavBar() {
+export default function ResponsiveNavBar() {
   // The logic is that the on different screen sizes, some elements will be hidden, then others will show, using "display" property and "xs, md" keywords to assign screen sizes
 
   const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
@@ -131,4 +131,4 @@ function ResponsiveNavBar() {
     </AppBar>
   );
 }
-export default ResponsiveNavBar;
+

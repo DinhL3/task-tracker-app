@@ -1,6 +1,6 @@
 import { Container, Typography } from '@mui/material';
 
-function About() {
+export default function About() {
   return (
     <Container maxWidth="md">
       <Typography variant="h3" sx={{ mt: 2 }} gutterBottom>
@@ -59,4 +59,4 @@ function About() {
   );
 }
 
-export default About;
+
