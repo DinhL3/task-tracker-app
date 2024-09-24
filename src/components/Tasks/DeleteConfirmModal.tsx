@@ -27,7 +27,12 @@ export default function DeleteConfirmModal({
         <Typography id="delete-confirm-title" variant="h6" component="h2">
           Are you sure you want to delete this task?
         </Typography>
-        <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 2 }}>
+        <Stack
+          direction="row"
+          spacing={2}
+          justifyContent="flex-end"
+          sx={{ mt: 2 }}
+        >
           <Button variant="contained" color="error" onClick={onConfirmDelete}>
             Yes
           </Button>

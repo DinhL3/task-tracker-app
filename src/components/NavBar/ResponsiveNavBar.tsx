@@ -58,7 +58,7 @@ export default function ResponsiveNavBar() {
         ))}
       </>
     );
-  };
+  }
 
   function MobileMenuItems() {
     return (
@@ -75,7 +75,7 @@ export default function ResponsiveNavBar() {
         ))}
       </>
     );
-  };
+  }
 
   return (
     <AppBar
@@ -131,4 +131,3 @@ export default function ResponsiveNavBar() {
     </AppBar>
   );
 }
-

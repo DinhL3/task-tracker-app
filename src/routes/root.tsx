@@ -51,6 +51,16 @@ export default function Root() {
     }
   };
 
+  // Save the updated task after editing
+  const handleSaveTask = (updatedTask: Task) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === updatedTask.id ? updatedTask : task
+      )
+    );
+    handleCloseModal();
+  };
+
   return (
     <>
       <Container maxWidth="md" sx={{ mt: 2 }}>
@@ -58,7 +68,12 @@ export default function Root() {
           Your Tasks
         </Typography>
         <TaskList tasks={tasks} onTaskClick={handleOpenModal} />
-        <TaskModal selectedTask={selectedTask} onClose={handleCloseModal} onDeleteClick={handleDeleteClick} />
+        <TaskModal
+          selectedTask={selectedTask}
+          onClose={handleCloseModal}
+          onDeleteClick={handleDeleteClick}
+          onSaveClick={handleSaveTask}
+        />
         <DeleteConfirmModal
           open={openDeleteConfirm}
           onClose={() => setOpenDeleteConfirm(false)}

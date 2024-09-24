@@ -1,11 +1,25 @@
-import { Box, Typography, Modal, Stack, Button, Chip } from '@mui/material';
+import { useState, useEffect } from 'react';
+import {
+  Box,
+  Typography,
+  Modal,
+  Stack,
+  Button,
+  Chip,
+  TextField,
+} from '@mui/material';
 import { Task } from '../../models/task.model';
-import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import {
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Save as SaveIcon,
+} from '@mui/icons-material';
 
 interface TaskModalProps {
   selectedTask: Task | null;
   onClose: () => void;
   onDeleteClick: () => void;
+  onSaveClick: (task: Task) => void;
 }
 
 const modalBoxStyle = {
@@ -22,29 +36,125 @@ export default function TaskModal({
   selectedTask,
   onClose,
   onDeleteClick,
+  onSaveClick,
 }: TaskModalProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [taskName, setTaskName] = useState(selectedTask?.name || '');
+  const [nameError, setNameError] = useState<string>('');
+  const [tags, setTags] = useState<string[]>(selectedTask?.tags || []);
+  const [newTag, setNewTag] = useState('');
+
+  // This is neccessary to reset the form when the selected task changes (e.g. when closing modal during edit mode)
+  useEffect(() => {
+    if (selectedTask) {
+      setTaskName(selectedTask.name);
+      setTags(selectedTask.tags);
+      setIsEditing(false); // Reset to view mode when task changes
+    }
+  }, [selectedTask]);
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSaveClick = () => {
+    const updatedTask = { ...selectedTask, name: taskName.trim(), tags } as Task;
+    onSaveClick(updatedTask); // Save the task
+    setIsEditing(false); // Exit edit mode
+  };
+
+  const handleCancelClick = () => {
+    setIsEditing(false);
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const nameInput = e.target.value;
+    setTaskName(nameInput);
+
+    if (nameInput.trim() === '') {
+      setNameError('Name is required');
+    } else {
+      setNameError('');
+    }
+  };
+
   return (
     <Modal open={Boolean(selectedTask)} onClose={onClose}>
       <Box sx={modalBoxStyle}>
-        <Typography id="modal-modal-title" variant="h6" component="h2">
-          {selectedTask?.name}
-        </Typography>
-        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-          Tags:
-        </Typography>
-        <Stack direction="row" spacing={1}>
-          {selectedTask?.tags.map((tag) => (
-            <Chip key={tag} label={tag} />
-          ))}
-        </Stack>
-        <Stack direction="row" spacing={2} justifyContent="space-between" sx={{ mt: 2 }}>
-          <Button variant="contained" startIcon={<EditIcon />} color="info">
-            Edit
-          </Button>
-          <Button variant="outlined" endIcon={<DeleteIcon />} color="error" onClick={onDeleteClick}>
-            Delete
-          </Button>
-        </Stack>
+        {/* View mode */}
+        {!isEditing && (
+          <>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              {selectedTask?.name}
+            </Typography>
+            <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+              Tags:
+            </Typography>
+            <Stack direction="row" spacing={1}>
+              {selectedTask?.tags.map((tag) => (
+                <Chip key={tag} label={tag} />
+              ))}
+            </Stack>
+            <Stack
+              direction="row"
+              spacing={2}
+              justifyContent="flex-end"
+              sx={{ mt: 2 }}
+            >
+              <Button
+                variant="contained"
+                startIcon={<EditIcon />}
+                color="info"
+                onClick={handleEditClick}
+              >
+                Edit
+              </Button>
+            </Stack>
+          </>
+        )}
+
+        {/* Edit mode */}
+        {isEditing && (
+          <>
+            <TextField
+              id="task-name"
+              label="Task name"
+              variant="standard"
+              value={taskName}
+              onChange={handleNameChange}
+              error={!!nameError}
+              helperText={nameError}
+            />
+            <Stack
+              direction="row"
+              spacing={2}
+              justifyContent="flex-end"
+              sx={{ mt: 2 }}
+            >
+              <Button
+                variant="contained"
+                startIcon={<SaveIcon />}
+                color="success"
+                onClick={handleSaveClick}
+                disabled={!!nameError || taskName.trim() === ''}
+              >
+                Save
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<DeleteIcon />}
+                color="error"
+                onClick={onDeleteClick}
+              >
+                Delete
+              </Button>
+              {/* cancel button */}
+              <Button variant="outlined" onClick={handleCancelClick}>
+                Cancel
+              </Button>
+            </Stack>
+          </>
+        )}
       </Box>
     </Modal>
   );

@@ -51,12 +51,10 @@ export default function About() {
         Most Difficult Feature
       </Typography>
       <Typography variant="body1">
-        The most difficult feature to implement was using the React Router
-        library, because the latest version is completely different from the
-        last time I used it.
+        The most difficult feature is the task editing form, because forms are
+        always difficult with their multiple status toggle, error handling, and
+        then we must add server saving on top afterwar.
       </Typography>
     </Container>
   );
 }
-
-
