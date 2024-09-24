@@ -43,7 +43,7 @@ export default function ResponsiveNavBar() {
 
   const pages = ['Home', 'Pricing', 'About'];
 
-  const DesktopMenuItems = () => {
+  function DesktopMenuItems() {
     return (
       <>
         {pages.map((page) => (
@@ -60,7 +60,7 @@ export default function ResponsiveNavBar() {
     );
   };
 
-  const MobileMenuItems = () => {
+  function MobileMenuItems() {
     return (
       <>
         {pages.map((page) => (
