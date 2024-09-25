@@ -14,6 +14,7 @@ import {
   Edit as EditIcon,
   Save as SaveIcon,
   Close as CloseIcon,
+  Add as AddIcon,
 } from '@mui/icons-material';
 
 interface TaskModalProps {
@@ -43,6 +44,8 @@ export default function TaskModal({
   const [taskName, setTaskName] = useState(selectedTask?.name || '');
   const [nameError, setNameError] = useState<string>('');
   const [tags, setTags] = useState<string[]>(selectedTask?.tags || []);
+  const [newTag, setNewTag] = useState<string>('');
+  const [newTagError, setNewTagError] = useState<string>('');
 
   // This is neccessary to reset the form when the selected task changes (e.g. when closing modal during edit mode)
   useEffect(() => {
@@ -83,8 +86,37 @@ export default function TaskModal({
     }
   };
 
+  const handleNewTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTagInput = e.target.value;
+    const validTagRegex = /^[a-zA-Z\s]+$/;
+
+    if (newTagInput === '' || validTagRegex.test(newTagInput)) {
+      setNewTag(newTagInput);
+      setNewTagError('');
+    } else {
+      setNewTagError('Tags can only contain letters');
+    }
+  };
+
   const handleDeleteTagClick = (tagToDelete: string) => {
     setTags((prevTags) => prevTags.filter((tag) => tag !== tagToDelete));
+  };
+
+  const handleAddTagClick = () => {
+    if (tags.includes(newTag.trim())) {
+      setNewTagError('Tag already exists');
+      return;
+    }
+
+    setTags((prevTags) => [...prevTags, newTag.trim()]); // Add the new tag to the tags array
+    setNewTag(''); // Clear the input field after adding the tag
+    setNewTagError(''); // Clear any previous error
+  };
+
+  const handleEnterKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleAddTagClick();
+    }
   };
 
   /* When modal is open, user can see the task details in "View mode".
@@ -103,7 +135,7 @@ where each detail changes to an input field. */
             <Typography id="tags" sx={{ mt: 2 }}>
               Tags:
             </Typography>
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', rowGap: 1 }}>
               {selectedTask?.tags.map((tag) => (
                 <Chip key={tag} label={tag} />
               ))}
@@ -131,7 +163,7 @@ where each detail changes to an input field. */
         {isEditing && (
           <>
             <TextField
-              id="task-name"
+              id="task-name-input"
               label="Task name"
               variant="standard"
               value={taskName}
@@ -139,10 +171,10 @@ where each detail changes to an input field. */
               error={!!nameError}
               helperText={nameError}
             />
-            <Typography id="tags" sx={{ mt: 2 }}>
+            <Typography id="tags" sx={{ mt: 3 }}>
               Tags:
             </Typography>
-            <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+            <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', rowGap: 1 }}>
               {tags.map((tag) => (
                 <Chip
                   key={tag}
@@ -153,15 +185,45 @@ where each detail changes to an input field. */
             </Stack>
             <Stack
               direction="row"
+              alignItems="flex-start"
+              spacing={1}
+              sx={{ mt: 2 }}
+            >
+              <TextField
+                id="new-tag-input"
+                label="Add new tag"
+                variant="filled"
+                value={newTag}
+                onChange={handleNewTagChange}
+                error={!!newTagError}
+                helperText={newTagError}
+                onKeyDown={handleEnterKeyDown}
+              />
+              <Button
+                id="add-new-tag-button"
+                variant="outlined"
+                startIcon={<AddIcon />}
+                color="primary"
+                size="small"
+                onClick={handleAddTagClick}
+                disabled={!!newTagError || newTag.trim() === ''}
+              >
+                Add
+              </Button>
+            </Stack>
+            {/* Bottom row buttons */}
+            <Stack
+              direction="row"
               spacing={2}
               justifyContent="flex-end"
-              sx={{ mt: 2 }}
+              sx={{ mt: 4 }}
             >
               <Button
                 id="save-button"
                 variant="contained"
                 startIcon={<SaveIcon />}
                 color="success"
+                size="small"
                 onClick={handleSaveClick}
                 disabled={!!nameError || taskName.trim() === ''}
               >
@@ -170,6 +232,7 @@ where each detail changes to an input field. */
               <Button
                 id="delete-button"
                 variant="outlined"
+                size="small"
                 startIcon={<DeleteIcon />}
                 color="error"
                 onClick={onDeleteClick}
@@ -179,6 +242,7 @@ where each detail changes to an input field. */
               <Button
                 id="cancel-button"
                 variant="outlined"
+                size="small"
                 startIcon={<CloseIcon />}
                 onClick={handleCancelClick}
               >
