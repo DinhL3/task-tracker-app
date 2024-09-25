@@ -13,6 +13,7 @@ import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   Save as SaveIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 
 interface TaskModalProps {
@@ -58,9 +59,14 @@ export default function TaskModal({
   };
 
   const handleSaveClick = () => {
-    const updatedTask = { ...selectedTask, name: taskName.trim(), tags } as Task;
-    onSaveClick(updatedTask); // Save the task
-    setIsEditing(false); // Exit edit mode
+    // CLicking save button will save the new details of the task, and switch back to "View mode".
+    const updatedTask = {
+      ...selectedTask,
+      name: taskName.trim(),
+      tags,
+    } as Task;
+    onSaveClick(updatedTask);
+    setIsEditing(false);
   };
 
   const handleCancelClick = () => {
@@ -77,6 +83,10 @@ export default function TaskModal({
       setNameError('');
     }
   };
+
+  /* When modal is open, user can see the task details in "View mode".
+Clicking on the edit button with switch to "Edit mode",
+where each detail changes to an input field. */
 
   return (
     <Modal open={Boolean(selectedTask)} onClose={onClose}>
@@ -148,8 +158,11 @@ export default function TaskModal({
               >
                 Delete
               </Button>
-              {/* cancel button */}
-              <Button variant="outlined" onClick={handleCancelClick}>
+              <Button
+                variant="outlined"
+                startIcon={<CloseIcon />}
+                onClick={handleCancelClick}
+              >
                 Cancel
               </Button>
             </Stack>

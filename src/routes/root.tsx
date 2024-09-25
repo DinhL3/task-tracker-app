@@ -54,9 +54,7 @@ export default function Root() {
   // Save the updated task after editing
   const handleSaveTask = (updatedTask: Task) => {
     setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === updatedTask.id ? updatedTask : task
-      )
+      prevTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
     );
     handleCloseModal();
   };
