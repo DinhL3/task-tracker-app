@@ -56,7 +56,6 @@ export default function Root() {
     setTasks((prevTasks) =>
       prevTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
     );
-    handleCloseModal();
   };
 
   return (

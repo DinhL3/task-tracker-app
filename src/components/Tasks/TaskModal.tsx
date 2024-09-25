@@ -3,19 +3,16 @@ import {
   Box,
   Typography,
   Modal,
-  Stack,
-  Button,
-  Chip,
   TextField,
+  Button,
+  Stack,
 } from '@mui/material';
 import { Task } from '../../models/task.model';
-import {
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  Save as SaveIcon,
-  Close as CloseIcon,
-  Add as AddIcon,
-} from '@mui/icons-material';
+import { modalBoxStyle } from '../../styles';
+
+import TagList from './TagList';
+import TagInput from './TagInput';
+import ActionButtons from './ActionButtons';
 
 interface TaskModalProps {
   selectedTask: Task | null;
@@ -23,16 +20,6 @@ interface TaskModalProps {
   onDeleteClick: () => void;
   onSaveClick: (task: Task) => void;
 }
-
-const modalBoxStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: { xs: '90%', sm: 400 },
-  bgcolor: 'background.paper',
-  p: 4,
-};
 
 export default function TaskModal({
   selectedTask,
@@ -44,53 +31,64 @@ export default function TaskModal({
   const [taskName, setTaskName] = useState(selectedTask?.name || '');
   const [nameError, setNameError] = useState<string>('');
   const [tags, setTags] = useState<string[]>(selectedTask?.tags || []);
+
+  // Store original task details for reverting on cancel
+  const [originalTaskName, setOriginalTaskName] = useState<string>('');
+  const [originalTags, setOriginalTags] = useState<string[]>([]);
+
   const [newTag, setNewTag] = useState<string>('');
   const [newTagError, setNewTagError] = useState<string>('');
 
-  // This is neccessary to reset the form when the selected task changes (e.g. when closing modal during edit mode)
+  // Reset form when selected task changes or modal is closed
   useEffect(() => {
     if (selectedTask) {
       setTaskName(selectedTask.name);
       setTags(selectedTask.tags);
-      setIsEditing(false); // Reset to view mode when task changes
+      setIsEditing(false);
+      setNewTag(''); // Reset new tag input when modal is opened or closed
+      setNewTagError(''); // Clear new tag error
     }
   }, [selectedTask]);
 
   const handleEditClick = () => {
+    // Save current state as original state when entering edit mode
+    setOriginalTaskName(taskName);
+    setOriginalTags(tags);
     setIsEditing(true);
   };
 
   const handleSaveClick = () => {
-    // CLicking save button will save the new details of the task, and switch back to "View mode".
     const updatedTask = {
       ...selectedTask,
       name: taskName.trim(),
-      tags: tags,
+      tags,
     } as Task;
-    onSaveClick(updatedTask);
-    setIsEditing(false);
+    onSaveClick(updatedTask); // Pass updated task to parent component
+    setIsEditing(false); // Switch back to view mode without closing the modal
   };
 
   const handleCancelClick = () => {
+    // Revert to original values when canceling
+    setTaskName(originalTaskName);
+    setTags(originalTags);
+    setNewTag(''); // Reset new tag input
+    setNewTagError(''); // Clear new tag error
     setIsEditing(false);
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nameInput = e.target.value;
     setTaskName(nameInput);
-
-    if (nameInput.trim() === '') {
-      setNameError('Name is required');
-    } else {
-      setNameError('');
-    }
+    setNameError(nameInput.trim() === '' ? 'Name is required' : '');
   };
 
   const handleNewTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTagInput = e.target.value;
     const validTagRegex = /^[a-zA-Z\s]+$/;
 
-    if (newTagInput === '' || validTagRegex.test(newTagInput)) {
+    if (newTagInput.length > 16) {
+      setNewTagError('Tag cannot be longer than 16 characters');
+    } else if (validTagRegex.test(newTagInput) || newTagInput === '') {
       setNewTag(newTagInput);
       setNewTagError('');
     } else {
@@ -103,25 +101,18 @@ export default function TaskModal({
   };
 
   const handleAddTagClick = () => {
-    if (tags.includes(newTag.trim())) {
+    if (!tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag('');
+      setNewTagError('');
+    } else {
       setNewTagError('Tag already exists');
-      return;
     }
-
-    setTags((prevTags) => [...prevTags, newTag.trim()]); // Add the new tag to the tags array
-    setNewTag(''); // Clear the input field after adding the tag
-    setNewTagError(''); // Clear any previous error
   };
 
   const handleEnterKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleAddTagClick();
-    }
+    if (e.key === 'Enter') handleAddTagClick();
   };
-
-  /* When modal is open, user can see the task details in "View mode".
-Clicking on the edit button with switch to "Edit mode",
-where each detail changes to an input field. */
 
   return (
     <Modal open={Boolean(selectedTask)} onClose={onClose}>
@@ -129,17 +120,13 @@ where each detail changes to an input field. */
         {/* View mode */}
         {!isEditing && (
           <>
-            <Typography id="task-name" variant="h6" component="h2">
-              {selectedTask?.name}
+            <Typography id="task-name" variant="h6">
+              {taskName}
             </Typography>
             <Typography id="tags" sx={{ mt: 2 }}>
               Tags:
             </Typography>
-            <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', rowGap: 1 }}>
-              {selectedTask?.tags.map((tag) => (
-                <Chip key={tag} label={tag} />
-              ))}
-            </Stack>
+            <TagList tags={tags} />
             <Stack
               direction="row"
               spacing={2}
@@ -147,9 +134,7 @@ where each detail changes to an input field. */
               sx={{ mt: 2 }}
             >
               <Button
-                id="edit-button"
                 variant="contained"
-                startIcon={<EditIcon />}
                 color="info"
                 onClick={handleEditClick}
               >
@@ -174,81 +159,20 @@ where each detail changes to an input field. */
             <Typography id="tags" sx={{ mt: 3 }}>
               Tags:
             </Typography>
-            <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', rowGap: 1 }}>
-              {tags.map((tag) => (
-                <Chip
-                  key={tag}
-                  label={tag}
-                  onDelete={() => handleDeleteTagClick(tag)}
-                />
-              ))}
-            </Stack>
-            <Stack
-              direction="row"
-              alignItems="flex-start"
-              spacing={1}
-              sx={{ mt: 2 }}
-            >
-              <TextField
-                id="new-tag-input"
-                label="Add new tag"
-                variant="filled"
-                value={newTag}
-                onChange={handleNewTagChange}
-                error={!!newTagError}
-                helperText={newTagError}
-                onKeyDown={handleEnterKeyDown}
-              />
-              <Button
-                id="add-new-tag-button"
-                variant="outlined"
-                startIcon={<AddIcon />}
-                color="primary"
-                size="small"
-                onClick={handleAddTagClick}
-                disabled={!!newTagError || newTag.trim() === ''}
-              >
-                Add
-              </Button>
-            </Stack>
-            {/* Bottom row buttons */}
-            <Stack
-              direction="row"
-              spacing={2}
-              justifyContent="flex-end"
-              sx={{ mt: 4 }}
-            >
-              <Button
-                id="save-button"
-                variant="contained"
-                startIcon={<SaveIcon />}
-                color="success"
-                size="small"
-                onClick={handleSaveClick}
-                disabled={!!nameError || taskName.trim() === ''}
-              >
-                Save
-              </Button>
-              <Button
-                id="delete-button"
-                variant="outlined"
-                size="small"
-                startIcon={<DeleteIcon />}
-                color="error"
-                onClick={onDeleteClick}
-              >
-                Delete
-              </Button>
-              <Button
-                id="cancel-button"
-                variant="outlined"
-                size="small"
-                startIcon={<CloseIcon />}
-                onClick={handleCancelClick}
-              >
-                Cancel
-              </Button>
-            </Stack>
+            <TagList tags={tags} onDelete={handleDeleteTagClick} />
+            <TagInput
+              newTag={newTag}
+              newTagError={newTagError}
+              onChange={handleNewTagChange}
+              onAdd={handleAddTagClick}
+              onEnterKey={handleEnterKeyDown}
+            />
+            <ActionButtons
+              onSave={handleSaveClick}
+              onDelete={onDeleteClick}
+              onCancel={handleCancelClick}
+              isSaveDisabled={!!nameError || taskName.trim() === ''}
+            />
           </>
         )}
       </Box>
