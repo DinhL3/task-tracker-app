@@ -43,7 +43,6 @@ export default function TaskModal({
   const [taskName, setTaskName] = useState(selectedTask?.name || '');
   const [nameError, setNameError] = useState<string>('');
   const [tags, setTags] = useState<string[]>(selectedTask?.tags || []);
-  const [newTag, setNewTag] = useState('');
 
   // This is neccessary to reset the form when the selected task changes (e.g. when closing modal during edit mode)
   useEffect(() => {
@@ -63,7 +62,7 @@ export default function TaskModal({
     const updatedTask = {
       ...selectedTask,
       name: taskName.trim(),
-      tags,
+      tags: tags,
     } as Task;
     onSaveClick(updatedTask);
     setIsEditing(false);
@@ -84,6 +83,10 @@ export default function TaskModal({
     }
   };
 
+  const handleDeleteTagClick = (tagToDelete: string) => {
+    setTags((prevTags) => prevTags.filter((tag) => tag !== tagToDelete));
+  };
+
   /* When modal is open, user can see the task details in "View mode".
 Clicking on the edit button with switch to "Edit mode",
 where each detail changes to an input field. */
@@ -94,10 +97,10 @@ where each detail changes to an input field. */
         {/* View mode */}
         {!isEditing && (
           <>
-            <Typography id="modal-modal-title" variant="h6" component="h2">
+            <Typography id="task-name" variant="h6" component="h2">
               {selectedTask?.name}
             </Typography>
-            <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+            <Typography id="tags" sx={{ mt: 2 }}>
               Tags:
             </Typography>
             <Stack direction="row" spacing={1}>
@@ -112,6 +115,7 @@ where each detail changes to an input field. */
               sx={{ mt: 2 }}
             >
               <Button
+                id="edit-button"
                 variant="contained"
                 startIcon={<EditIcon />}
                 color="info"
@@ -135,6 +139,18 @@ where each detail changes to an input field. */
               error={!!nameError}
               helperText={nameError}
             />
+            <Typography id="tags" sx={{ mt: 2 }}>
+              Tags:
+            </Typography>
+            <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+              {tags.map((tag) => (
+                <Chip
+                  key={tag}
+                  label={tag}
+                  onDelete={() => handleDeleteTagClick(tag)}
+                />
+              ))}
+            </Stack>
             <Stack
               direction="row"
               spacing={2}
@@ -142,6 +158,7 @@ where each detail changes to an input field. */
               sx={{ mt: 2 }}
             >
               <Button
+                id="save-button"
                 variant="contained"
                 startIcon={<SaveIcon />}
                 color="success"
@@ -151,6 +168,7 @@ where each detail changes to an input field. */
                 Save
               </Button>
               <Button
+                id="delete-button"
                 variant="outlined"
                 startIcon={<DeleteIcon />}
                 color="error"
@@ -159,6 +177,7 @@ where each detail changes to an input field. */
                 Delete
               </Button>
               <Button
+                id="cancel-button"
                 variant="outlined"
                 startIcon={<CloseIcon />}
                 onClick={handleCancelClick}
