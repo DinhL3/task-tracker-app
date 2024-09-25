@@ -12,6 +12,7 @@ export default function TagList({ tags, onDelete }: TagListProps) {
         <Chip
           key={tag}
           label={tag}
+          sx={{ minHeight: 32, lineHeight: '24px' }}
           onDelete={onDelete ? () => onDelete(tag) : undefined}
         />
       ))}
