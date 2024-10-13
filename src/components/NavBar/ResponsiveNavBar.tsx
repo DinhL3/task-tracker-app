@@ -41,7 +41,7 @@ export default function ResponsiveNavBar() {
   //     setAnchorElUser(null);
   //   };
 
-  const pages = ['Home', 'Pricing', 'About'];
+  const pages = ['Home', 'Tags', 'About'];
 
   function DesktopMenuItems() {
     return (

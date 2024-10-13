@@ -39,16 +39,7 @@ export default function TaskModal({
   const [newTag, setNewTag] = useState<string>('');
   const [newTagError, setNewTagError] = useState<string>('');
 
-  // Reset form when selected task changes or modal is closed
-  useEffect(() => {
-    if (selectedTask) {
-      setTaskName(selectedTask.name);
-      setTags(selectedTask.tags);
-      setIsEditing(false);
-      setNewTag(''); // Reset new tag input when modal is opened or closed
-      setNewTagError(''); // Clear new tag error
-    }
-  }, [selectedTask]);
+
 
   const handleEditClick = () => {
     // Save current state as original state when entering edit mode
@@ -113,6 +104,25 @@ export default function TaskModal({
   const handleEnterKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleAddTagClick();
   };
+
+  // Reset form when selected task changes or modal is closed
+  useEffect(() => {
+    if (selectedTask) {
+      setTaskName(selectedTask.name);
+      setTags(selectedTask.tags);
+
+      // Automatically go into edit mode if the task is new (name is empty),
+      // Pretty simple solution, a more sophisticated one would be entering different mode depending on the button clicked in root
+      if (selectedTask.name === '') {
+        setIsEditing(true);
+      } else {
+        setIsEditing(false);
+      }
+
+      setNewTag(''); // Reset new tag input when modal is opened or closed
+      setNewTagError(''); // Clear new tag error
+    }
+  }, [selectedTask]);
 
   return (
     <Modal open={Boolean(selectedTask)} onClose={onClose}>

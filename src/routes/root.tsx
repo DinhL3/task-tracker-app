@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Container, Typography } from '@mui/material';
+import { Button, Container, Typography } from '@mui/material';
 import TaskList from '../components/Tasks/TaskList';
 import TaskModal from '../components/Tasks/TaskModal';
 import DeleteConfirmModal from '../components/Tasks/DeleteConfirmModal';
 import { Task } from '../models/task.model';
+import { Add as AddIcon } from '@mui/icons-material';
 
 export default function Root() {
   const presetTasks: Task[] = [
@@ -31,8 +32,17 @@ export default function Root() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
 
-  const handleOpenModal = (task: Task) => {
-    setSelectedTask(task);
+  const handleOpenModal = (task: Task | null) => {
+    if (task) {
+      setSelectedTask(task); // Edit existing task
+    } else {
+      setSelectedTask({
+        id: tasks.length + 1, // Generate a new ID for new task
+        name: '',
+        tags: [],
+        lastModifiedDate: new Date().toISOString(),
+      }); // Create a new task template for adding
+    }
   };
 
   const handleCloseModal = () => {
@@ -51,11 +61,19 @@ export default function Root() {
     }
   };
 
-  // Save the updated task after editing
+  // Logic to save the edits of existing task, or add a new task
   const handleSaveTask = (updatedTask: Task) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-    );
+    setTasks((prevTasks) => {
+      const taskExists = prevTasks.some((task) => task.id === updatedTask.id);
+
+      if (taskExists) {
+        // Update the existing task
+        return prevTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task));
+      } else {
+        // Add a new task
+        return [...prevTasks, updatedTask];
+      }
+    });
   };
 
   return (
@@ -64,6 +82,15 @@ export default function Root() {
         <Typography variant="h3" gutterBottom>
           Your Tasks
         </Typography>
+        <Button
+          id="add-new-task-button"
+          variant="contained"
+          startIcon={<AddIcon />}
+          color="primary"
+          onClick={()=> handleOpenModal(null)}
+        >
+          Add new task
+        </Button>
         <TaskList tasks={tasks} onTaskClick={handleOpenModal} />
         <TaskModal
           selectedTask={selectedTask}

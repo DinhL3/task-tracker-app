@@ -53,7 +53,7 @@ export default function About() {
       <Typography variant="body1">
         The most difficult feature is the task editing form, because forms are
         always difficult with their multiple status toggle, error handling, and
-        then we must add server saving on top afterwar.
+        then HTTP requests on top afterward.
       </Typography>
     </Container>
   );
