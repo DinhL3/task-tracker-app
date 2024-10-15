@@ -5,6 +5,7 @@ import TaskModal from '../components/Tasks/TaskModal';
 import DeleteConfirmModal from '../components/Tasks/DeleteConfirmModal';
 import { Task } from '../models/task.model';
 import { Add as AddIcon } from '@mui/icons-material';
+import { centerContainerStyles } from '../styles';
 
 export default function Root() {
   const presetTasks: Task[] = [
@@ -68,7 +69,9 @@ export default function Root() {
 
       if (taskExists) {
         // Update the existing task
-        return prevTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task));
+        return prevTasks.map((task) =>
+          task.id === updatedTask.id ? updatedTask : task
+        );
       } else {
         // Add a new task
         return [...prevTasks, updatedTask];
@@ -78,7 +81,7 @@ export default function Root() {
 
   return (
     <>
-      <Container maxWidth="md" sx={{ mt: 2 }}>
+      <Container maxWidth="sm" sx={centerContainerStyles}>
         <Typography variant="h3" gutterBottom>
           Your Tasks
         </Typography>
@@ -87,7 +90,7 @@ export default function Root() {
           variant="contained"
           startIcon={<AddIcon />}
           color="primary"
-          onClick={()=> handleOpenModal(null)}
+          onClick={() => handleOpenModal(null)}
         >
           Add new task
         </Button>

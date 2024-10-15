@@ -8,7 +8,7 @@ interface TaskListProps {
 
 export default function TaskList({ tasks, onTaskClick }: TaskListProps) {
   return (
-    <List aria-label="tasklist">
+    <List aria-label="tasklist" sx={{ width: '100%' }}>
       {tasks.map((task) => (
         <div key={task.id}>
           <ListItemButton onClick={() => onTaskClick(task)}>
