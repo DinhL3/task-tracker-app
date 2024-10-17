@@ -7,7 +7,6 @@ import {
   Button,
   Stack,
 } from '@mui/material';
-import { Task } from '../../models/task.model';
 import { modalBoxStyle } from '../../styles';
 
 import TagList from './TagList';
@@ -38,8 +37,6 @@ export default function TaskModal({
 
   const [newTag, setNewTag] = useState<string>('');
   const [newTagError, setNewTagError] = useState<string>('');
-
-
 
   const handleEditClick = () => {
     // Save current state as original state when entering edit mode

@@ -1,11 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
-
-// Define the type for the state
-interface Tag {
-  id: number; // id is an integer in the backend
-  name: string;
-}
+import { Tag } from '../../models';
 
 interface TagsState {
   tags: Tag[];
