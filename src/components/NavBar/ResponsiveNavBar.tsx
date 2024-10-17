@@ -11,10 +11,7 @@ import {
   Button,
   MenuItem,
 } from '@mui/material';
-import {
-  Menu as MenuIcon,
-  PendingActions as PendingActionsIcon,
-} from '@mui/icons-material';
+import { Menu as MenuIcon, Castle as CastleIcon } from '@mui/icons-material';
 
 // const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
@@ -87,7 +84,7 @@ export default function ResponsiveNavBar() {
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           {/* Desktop nav bar logo and nav items from here */}
-          <PendingActionsIcon
+          <CastleIcon
             sx={{ display: { xs: 'none', md: 'flex' }, mr: 1, fontSize: 32 }}
           />
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>

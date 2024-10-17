@@ -1,13 +1,6 @@
+// External libraries
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState, AppDispatch } from '../app/store';
-import {
-  fetchTags,
-  addTag,
-  updateTag,
-  deleteTag,
-} from '../features/tags/tagsSlice';
-
 import {
   Box,
   Container,
@@ -17,8 +10,19 @@ import {
   ListItem,
   ListItemText,
   Typography,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
-import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Edit as EditIcon } from '@mui/icons-material';
+
+// Internal modules
+import { RootState, AppDispatch } from '../app/store';
+import {
+  fetchTags,
+  addTag,
+  updateTag,
+  deleteTag,
+} from '../features/tags/tagsSlice';
 import { centerContainerStyles } from '../styles';
 
 export default function Tags() {
@@ -37,25 +41,44 @@ export default function Tags() {
 
   return (
     <Container maxWidth="xs" sx={centerContainerStyles}>
-      <Typography variant="h3" gutterBottom>
-        Tags
-      </Typography>
-      <List sx={{ width: '100%' }}>
-        {tags.map((tag) => (
-          <React.Fragment key={tag.id}>
-            <ListItem
-              secondaryAction={
-                <IconButton edge="end" aria-label="edit">
-                  <EditIcon />
-                </IconButton>
-              }
-            >
-              <ListItemText primary={tag.name} />
-            </ListItem>
-            <Divider />
-          </React.Fragment>
-        ))}
-      </List>
+      {/* Loading Spinner */}
+      {loading && (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Tags List */}
+      {!loading && !error && (
+        <>
+          <Typography variant="h3" gutterBottom>
+            Tags
+          </Typography>
+          <List sx={{ width: '100%' }}>
+            {tags.map((tag) => (
+              <React.Fragment key={tag.id}>
+                <ListItem
+                  secondaryAction={
+                    <IconButton edge="end" aria-label="edit">
+                      <EditIcon />
+                    </IconButton>
+                  }
+                >
+                  <ListItemText primary={tag.name} />
+                </ListItem>
+                <Divider />
+              </React.Fragment>
+            ))}
+          </List>
+        </>
+      )}
     </Container>
   );
 }

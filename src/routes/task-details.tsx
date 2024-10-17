@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, Chip, Container, Stack, Typography } from '@mui/material';
+import {
+  Button,
+  Chip,
+  Container,
+  Stack,
+  Typography,
+  CircularProgress,
+  Alert,
+} from '@mui/material';
 import { Edit as EditIcon } from '@mui/icons-material';
 
 import { RootState, AppDispatch } from '../app/store';
@@ -29,7 +37,6 @@ export default function TaskDetails() {
   // Fetch the task by ID and tags on component load
   useEffect(() => {
     if (taskId) {
-      console.log('code reached here');
       dispatch(fetchTaskById(Number(taskId)));
       dispatch(fetchTags());
     }
@@ -48,6 +55,21 @@ export default function TaskDetails() {
 
   return (
     <Container maxWidth="sm" sx={centerContainerStyles}>
+      {/* Loading Spinner */}
+      {(taskLoading || tagsLoading) && (
+        <Stack alignItems="center" sx={{ mt: 4 }}>
+          <CircularProgress />
+        </Stack>
+      )}
+
+      {/* Error Handling */}
+      {(taskError || tagsError) && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {taskError || tagsError}
+        </Alert>
+      )}
+
+      {/* Task Details */}
       {task && (
         <>
           <Typography variant="h4">{task.name}</Typography>

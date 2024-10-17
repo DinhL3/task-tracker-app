@@ -2,8 +2,8 @@ import { Container, Typography } from '@mui/material';
 
 export default function About() {
   return (
-    <Container maxWidth="md">
-      <Typography variant="h3" sx={{ mt: 2 }} gutterBottom>
+    <Container maxWidth="sm">
+      <Typography variant="h3" sx={{ mt: 2, textAlign: 'center' }} gutterBottom>
         About this app
       </Typography>
 

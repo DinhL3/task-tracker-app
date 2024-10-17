@@ -16,6 +16,7 @@ import About from './routes/about.tsx';
 import Root from './routes/root.tsx';
 import Tags from './routes/tags.tsx';
 import TaskDetails from './routes/task-details.tsx';
+import ErrorPage from './components/ErrorPage/ErrorPage.tsx';
 
 // This way is of setting up react-router-dom is based on the official documentation of v6.26.2
 
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
   {
     path: '/', // Base path for the layout
     element: <Layout />, // Use Layout as the element
+    errorElement: <ErrorPage />,
     children: [
       {
         path: '/',

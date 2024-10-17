@@ -10,18 +10,16 @@ import {
   ListItemButton,
   ListItemText,
   Divider,
+  Alert,
+  CircularProgress,
+  Box,
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 
 // Internal modules
 import { centerContainerStyles } from '../styles';
 import { RootState, AppDispatch } from '../app/store';
-import {
-  fetchTasks,
-  addTask,
-  updateTask,
-  deleteTask,
-} from '../features/tasks/tasksSlice';
+import { fetchTasks } from '../features/tasks/tasksSlice';
 
 export default function Root() {
   const dispatch = useDispatch<AppDispatch>();
@@ -33,21 +31,46 @@ export default function Root() {
     dispatch(fetchTasks()); // Fetch tasks when the component loads
   }, [dispatch]);
 
-  return (
-    <>
+  // If there is an error, show only the error and nothing else
+  if (error) {
+    return (
       <Container maxWidth="sm" sx={centerContainerStyles}>
-        <Typography variant="h3" gutterBottom>
-          Your Tasks
-        </Typography>
-        <Button
-          id="add-new-task-button"
-          variant="contained"
-          startIcon={<AddIcon />}
-          color="primary"
-        >
-          Add new task
-        </Button>
-        <List aria-label="tasklist" sx={{ width: '100%' }}>
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      </Container>
+    );
+  }
+
+  // If loading, show the spinner
+  if (loading) {
+    return (
+      <Container maxWidth="sm" sx={centerContainerStyles}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
+
+  // Once loaded, if no tasks are available, show a message
+  return (
+    <Container maxWidth="sm" sx={centerContainerStyles}>
+      <Typography variant="h3" gutterBottom>
+        Your Tasks
+      </Typography>
+      <Button
+        id="add-new-task-button"
+        variant="contained"
+        startIcon={<AddIcon />}
+        color="primary"
+      >
+        Add new task
+      </Button>
+
+      {/* Task List */}
+      {tasks.length > 0 ? (
+        <List aria-label="tasklist" sx={{ width: '100%', mt: 2 }}>
           {tasks.map((task) => (
             <React.Fragment key={task.id}>
               <ListItemButton component={Link} to={`/tasks/${task.id}`}>
@@ -57,7 +80,9 @@ export default function Root() {
             </React.Fragment>
           ))}
         </List>
-      </Container>
-    </>
+      ) : (
+        <Typography sx={{ mt: 2 }}>No tasks available.</Typography>
+      )}
+    </Container>
   );
 }

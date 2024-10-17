@@ -21,6 +21,8 @@ export const fetchTasks = createAsyncThunk(
   'tasks/fetchTasks',
   async (_, thunkAPI) => {
     try {
+      // await delay(2000);
+
       const response = await axios.get('http://127.0.0.1:3010/tasks');
       return response.data as Task[]; // Response is an array of tasks
     } catch (error) {
