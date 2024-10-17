@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { Provider } from 'react-redux';
 
 import './index.css';
 
@@ -9,12 +10,12 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-import Root from './routes/root.tsx';
-import About from './routes/about.tsx';
-import Layout from './Layout.tsx';
-import Tags from './routes/tags.tsx';
-import { Provider } from 'react-redux';
 import store from './app/store.ts';
+import Layout from './Layout.tsx';
+import About from './routes/about.tsx';
+import Root from './routes/root.tsx';
+import Tags from './routes/tags.tsx';
+import TaskDetails from './routes/task-details.tsx';
 
 // This way is of setting up react-router-dom is based on the official documentation of v6.26.2
 
@@ -35,6 +36,19 @@ const router = createBrowserRouter([
         path: 'tags',
         element: <Tags />,
       },
+      {
+        path: 'task/:id',
+        element: <TaskDetails />,
+      },
+      // {
+      //   path: 'task/new',
+      //   element: <EditTask />,
+      // },
+
+      // {
+      //   path: 'task/:id/edit',
+      //   element: <EditTask />,
+      // },
     ],
   },
 ]);

@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Define the type for the state
 interface Tag {
-  id: string;
+  id: number; // id is an integer in the backend
   name: string;
 }
 
@@ -11,6 +11,11 @@ interface TagsState {
   tags: Tag[];
   loading: boolean;
   error: string | null;
+}
+
+// Define an error type for rejected actions
+interface ErrorPayload {
+  error: string;
 }
 
 // Initial state for the tags feature
@@ -21,80 +26,84 @@ const initialState: TagsState = {
 };
 
 // Async thunk to fetch all tags
-export const fetchTags = createAsyncThunk(
-  'tags/fetchTags',
-  async (_, thunkAPI) => {
-    try {
-      const response = await axios.get('http://127.0.0.1:3010/tags');
-      return response.data; // Assuming the response contains an array of tags
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        return thunkAPI.rejectWithValue(
-          error.response.data.error || 'Failed to fetch tags'
-        );
-      }
-      return thunkAPI.rejectWithValue('Failed to fetch tags');
+export const fetchTags = createAsyncThunk<
+  Tag[],
+  void,
+  { rejectValue: ErrorPayload }
+>('tags/fetchTags', async (_, thunkAPI) => {
+  try {
+    const response = await axios.get('http://127.0.0.1:3010/tags');
+    return response.data; // Assuming the response contains an array of tags
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return thunkAPI.rejectWithValue({
+        error: error.response.data.error || 'Failed to fetch tags',
+      });
     }
+    return thunkAPI.rejectWithValue({ error: 'Failed to fetch tags' });
   }
-);
+});
 
 // Async thunk to add a new tag
-export const addTag = createAsyncThunk(
-  'tags/addTag',
-  async (tagName: string, thunkAPI) => {
-    try {
-      const response = await axios.post('http://127.0.0.1:3010/tags', {
-        name: tagName,
+export const addTag = createAsyncThunk<
+  Tag,
+  string,
+  { rejectValue: ErrorPayload }
+>('tags/addTag', async (tagName, thunkAPI) => {
+  try {
+    const response = await axios.post('http://127.0.0.1:3010/tags', {
+      name: tagName, // Backend expects 'name' in POST body
+    });
+    return response.data; // The backend returns the newly created tag with id
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return thunkAPI.rejectWithValue({
+        error: error.response.data.error || 'Failed to add tag',
       });
-      return response.data; // Assuming the response contains the new tag
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        return thunkAPI.rejectWithValue(
-          error.response.data.error || 'Failed to add tag'
-        );
-      }
-      return thunkAPI.rejectWithValue('Failed to add tag');
     }
+    return thunkAPI.rejectWithValue({ error: 'Failed to add tag' });
   }
-);
+});
 
 // Async thunk to update a tag
-export const updateTag = createAsyncThunk(
-  'tags/updateTag',
-  async ({ id, name }: { id: string; name: string }, thunkAPI) => {
-    try {
-      const response = await axios.put(`http://127.0.0.1:3010/tags/${id}`, {
-        name,
+export const updateTag = createAsyncThunk<
+  Tag,
+  { id: number; name: string },
+  { rejectValue: ErrorPayload }
+>('tags/updateTag', async ({ id, name }, thunkAPI) => {
+  try {
+    const response = await axios.put(`http://127.0.0.1:3010/tags/${id}`, {
+      name, // Backend expects 'name' to be updated
+    });
+    return response.data; // Backend responds with the updated tag
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return thunkAPI.rejectWithValue({
+        error: error.response.data.error || 'Failed to update tag',
       });
-      return response.data; // Assuming the response contains the updated tag
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        return thunkAPI.rejectWithValue(
-          error.response.data.error || 'Failed to update tag'
-        );
-      }
-      return thunkAPI.rejectWithValue('Failed to update tag');
     }
+    return thunkAPI.rejectWithValue({ error: 'Failed to update tag' });
   }
-);
+});
 
 // Async thunk to delete a tag
-export const deleteTag = createAsyncThunk(
-  'tags/deleteTag',
-  async (id: string, thunkAPI) => {
-    try {
-      await axios.delete(`http://127.0.0.1:3010/tags/${id}`);
-      return { id }; // Return the ID of the deleted tag
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        return thunkAPI.rejectWithValue(
-          error.response.data.error || 'Failed to delete tag'
-        );
-      }
-      return thunkAPI.rejectWithValue('Failed to delete tag');
+export const deleteTag = createAsyncThunk<
+  { id: number },
+  number,
+  { rejectValue: ErrorPayload }
+>('tags/deleteTag', async (id, thunkAPI) => {
+  try {
+    await axios.delete(`http://127.0.0.1:3010/tags/${id}`);
+    return { id }; // Return the ID of the deleted tag
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      return thunkAPI.rejectWithValue({
+        error: error.response.data.error || 'Failed to delete tag',
+      });
     }
+    return thunkAPI.rejectWithValue({ error: 'Failed to delete tag' });
   }
-);
+});
 
 // Tags slice
 export const tagsSlice = createSlice({
@@ -112,10 +121,13 @@ export const tagsSlice = createSlice({
         state.loading = false;
         state.tags = action.payload; // Set the fetched tags in the state
       })
-      .addCase(fetchTags.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(
+        fetchTags.rejected,
+        (state, action: PayloadAction<ErrorPayload | undefined>) => {
+          state.loading = false;
+          state.error = action.payload?.error || null;
+        }
+      )
 
       // Handle add tag
       .addCase(addTag.pending, (state) => {
@@ -126,10 +138,13 @@ export const tagsSlice = createSlice({
         state.loading = false;
         state.tags.push(action.payload); // Add the new tag to the state
       })
-      .addCase(addTag.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(
+        addTag.rejected,
+        (state, action: PayloadAction<ErrorPayload | undefined>) => {
+          state.loading = false;
+          state.error = action.payload?.error || null;
+        }
+      )
 
       // Handle update tag
       .addCase(updateTag.pending, (state) => {
@@ -145,10 +160,13 @@ export const tagsSlice = createSlice({
           state.tags[index] = action.payload; // Update the tag in the state
         }
       })
-      .addCase(updateTag.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      .addCase(
+        updateTag.rejected,
+        (state, action: PayloadAction<ErrorPayload | undefined>) => {
+          state.loading = false;
+          state.error = action.payload?.error || null;
+        }
+      )
 
       // Handle delete tag
       .addCase(deleteTag.pending, (state) => {
@@ -157,15 +175,18 @@ export const tagsSlice = createSlice({
       })
       .addCase(
         deleteTag.fulfilled,
-        (state, action: PayloadAction<{ id: string }>) => {
+        (state, action: PayloadAction<{ id: number }>) => {
           state.loading = false;
           state.tags = state.tags.filter((tag) => tag.id !== action.payload.id); // Remove the deleted tag from state
         }
       )
-      .addCase(deleteTag.rejected, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        state.error = action.payload;
-      });
+      .addCase(
+        deleteTag.rejected,
+        (state, action: PayloadAction<ErrorPayload | undefined>) => {
+          state.loading = false;
+          state.error = action.payload?.error || null;
+        }
+      );
   },
 });
 

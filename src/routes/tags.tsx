@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../app/store';
 import {
@@ -28,7 +28,7 @@ export default function Tags() {
   );
 
   const [newTag, setNewTag] = useState<string>('');
-  const [editTagId, setEditTagId] = useState<string | null>(null);
+  const [editTagId, setEditTagId] = useState<number | null>(null);
   const [editTagName, setEditTagName] = useState<string>('');
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function Tags() {
       </Typography>
       <List sx={{ width: '100%' }}>
         {tags.map((tag) => (
-          <>
+          <React.Fragment key={tag.id}>
             <ListItem
               secondaryAction={
                 <IconButton edge="end" aria-label="edit">
@@ -53,7 +53,7 @@ export default function Tags() {
               <ListItemText primary={tag.name} />
             </ListItem>
             <Divider />
-          </>
+          </React.Fragment>
         ))}
       </List>
     </Container>
