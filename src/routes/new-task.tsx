@@ -15,6 +15,7 @@ import { RootState, AppDispatch } from '../app/store';
 import { addTask } from '../features/tasks/tasksSlice';
 import { fetchTags, addTag } from '../features/tags/tagsSlice';
 import { centerContainerStyles } from '../styles';
+import { Navigate } from 'react-router-dom';
 
 export default function NewTask() {
   const dispatch = useDispatch<AppDispatch>();
@@ -28,6 +29,7 @@ export default function NewTask() {
   const [newTag, setNewTag] = useState<string>('');
   const [newTagError, setNewTagError] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
+  const [redirect, setRedirect] = useState<boolean>(false); // State to trigger redirection
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nameInput = e.target.value;
@@ -69,17 +71,13 @@ export default function NewTask() {
   const handleSaveClick = async () => {
     setSaving(true);
 
-    // Step 1: Identify which tags are new and which already exist
     const existingTagNames = tags.map((tag) => tag.name);
     const existingTagIds = tags.reduce((acc, tag) => {
       if (taskTags.includes(tag.name)) acc[tag.name] = tag.id;
       return acc;
     }, {} as Record<string, number>);
 
-    // Step 2: Separate new tags from existing ones
     const newTags = taskTags.filter((tag) => !existingTagNames.includes(tag));
-
-    // Step 3: Create new tags in the backend and retrieve their IDs
     const newTagIds: Record<string, number> = {};
     for (const tag of newTags) {
       try {
@@ -92,17 +90,14 @@ export default function NewTask() {
       }
     }
 
-    // Step 4: Combine existing and new tag IDs
     const allTagIds = taskTags.map(
       (tag) => existingTagIds[tag] || newTagIds[tag]
     );
     const tagIdsString = allTagIds.join(',');
 
-    // Step 5: Create the new task with the taskName and tag IDs
     try {
       await dispatch(addTask({ name: taskName, tags: tagIdsString }));
-      setTaskName('');
-      setTaskTags([]);
+      setRedirect(true); // Set redirect to true after saving the task
     } catch (error) {
       console.error('Error creating task:', error);
     } finally {
@@ -113,6 +108,10 @@ export default function NewTask() {
   useEffect(() => {
     dispatch(fetchTags()); // Fetch tags from backend
   }, [dispatch]);
+
+  if (redirect) {
+    return <Navigate to="/" replace />; // Redirect to root after task creation
+  }
 
   return (
     <Container maxWidth="sm" sx={centerContainerStyles}>
