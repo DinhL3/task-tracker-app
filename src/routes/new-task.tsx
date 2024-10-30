@@ -8,6 +8,8 @@ import {
   Chip,
   CircularProgress,
   Alert,
+  Autocomplete,
+  Box,
 } from '@mui/material';
 import { Add as AddIcon, Save as SaveIcon } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,7 +31,7 @@ export default function NewTask() {
   const [newTag, setNewTag] = useState<string>('');
   const [newTagError, setNewTagError] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
-  const [redirect, setRedirect] = useState<boolean>(false); // State to trigger redirection
+  const [redirect, setRedirect] = useState<boolean>(false);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nameInput = e.target.value;
@@ -97,7 +99,7 @@ export default function NewTask() {
 
     try {
       await dispatch(addTask({ name: taskName, tags: tagIdsString }));
-      setRedirect(true); // Set redirect to true after saving the task
+      setRedirect(true);
     } catch (error) {
       console.error('Error creating task:', error);
     } finally {
@@ -106,11 +108,11 @@ export default function NewTask() {
   };
 
   useEffect(() => {
-    dispatch(fetchTags()); // Fetch tags from backend
+    dispatch(fetchTags());
   }, [dispatch]);
 
   if (redirect) {
-    return <Navigate to="/" replace />; // Redirect to root after task creation
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -118,7 +120,7 @@ export default function NewTask() {
       <Typography variant="h4" gutterBottom>
         Create a New Task
       </Typography>
-      <form>
+      <Box sx={{ width: '100%' }}>
         <TextField
           id="task-name-input"
           label="Task name"
@@ -142,39 +144,56 @@ export default function NewTask() {
             />
           ))}
         </Stack>
-        <Stack
-          direction="row"
-          alignItems="flex-start"
-          spacing={1}
-          sx={{ mt: 2 }}
-        >
-          <TextField
-            id="new-tag-input"
-            label="Add new tag"
-            variant="filled"
-            value={newTag}
-            onChange={handleNewTagChange}
-            error={!!newTagError}
-            helperText={newTagError}
-            onKeyDown={handleEnterKeyDown}
+
+        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+          <Autocomplete
+            sx={{ width: 1 }}
+            disableCloseOnSelect
+            options={tags
+              .map((tag) => tag.name)
+              .filter((name) => !taskTags.includes(name))
+              .sort((a, b) => a.localeCompare(b))}
+            inputValue={newTag}
+            onInputChange={(event, newInputValue) => {
+              setNewTag(newInputValue);
+              setNewTagError('');
+            }}
+            onChange={(event, newValue) => {
+              if (newValue && !taskTags.includes(newValue)) {
+                setTaskTags([...taskTags, newValue]);
+                setNewTag('');
+              }
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Type tag or choose"
+                variant="filled"
+                error={!!newTagError}
+                helperText={newTagError}
+                onKeyDown={handleEnterKeyDown}
+              />
+            )}
           />
           <Button
             id="add-new-tag-button"
             variant="outlined"
             startIcon={<AddIcon />}
             color="primary"
-            size="small"
+            size="large"
             onClick={handleAddTagClick}
             disabled={!!newTagError || newTag.trim() === ''}
+            sx={{ alignSelf: 'flex-start' }}
           >
             Add
           </Button>
         </Stack>
+
         {error && <Alert severity="error">{error}</Alert>}
         <Stack
           direction="row"
           spacing={2}
-          justifyContent="flex-end"
+          justifyContent="center"
           sx={{ mt: 4 }}
         >
           <Button
@@ -183,13 +202,14 @@ export default function NewTask() {
             variant="contained"
             startIcon={<SaveIcon />}
             color="success"
+            size="large"
             onClick={handleSaveClick}
             disabled={!!nameError || taskName.trim() === '' || saving}
           >
             {saving ? <CircularProgress size={24} /> : 'Save'}
           </Button>
         </Stack>
-      </form>
+      </Box>
     </Container>
   );
 }
