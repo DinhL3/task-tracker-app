@@ -64,6 +64,8 @@ export default function Root() {
         variant="contained"
         startIcon={<AddIcon />}
         color="primary"
+        component={Link}
+        to={`/tasks/new`}
       >
         Add new task
       </Button>

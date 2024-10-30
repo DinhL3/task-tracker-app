@@ -76,8 +76,11 @@ export default function TaskDetails() {
           <Stack
             direction="row"
             spacing={1}
-            sx={{ flexWrap: 'wrap', rowGap: 1, mt: 2 }}
+            sx={{ flexWrap: 'wrap', rowGap: 1, mt: 2, alignItems: 'center' }}
           >
+            <Typography variant="body1" sx={{ mr: 1 }}>
+              Tags:
+            </Typography>
             {taskTags.map((tagName, index) => (
               <Chip
                 key={index}
