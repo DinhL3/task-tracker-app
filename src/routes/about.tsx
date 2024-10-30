@@ -43,8 +43,7 @@ export default function About() {
       </Typography>
       <Typography variant="body1" gutterBottom>
         Approximately XX hours were spent working on this programming
-        assignment. There is an Excel file with work hours and tasks breakdown
-        submitted along with this project.
+        assignment.
       </Typography>
 
       <Typography variant="h5" gutterBottom>
@@ -53,7 +52,8 @@ export default function About() {
       <Typography variant="body1">
         The most difficult feature is the task editing form, because forms are
         always difficult with their multiple status toggle, error handling, and
-        then HTTP requests on top afterward.
+        then HTTP requests on top afterward. The tag input that allows users to
+        choose from existing tags was pretty tricky to do.
       </Typography>
     </Container>
   );
