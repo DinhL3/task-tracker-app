@@ -1,37 +1,25 @@
 import { useState, useEffect } from 'react';
-import {
-  Container,
-  TextField,
-  Typography,
-  Button,
-  Stack,
-  Chip,
-  CircularProgress,
-  Alert,
-  Autocomplete,
-  Box,
-} from '@mui/material';
-import { Add as AddIcon, Save as SaveIcon } from '@mui/icons-material';
+import { Container, Typography, Stack, Alert, Box } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
+import { Navigate } from 'react-router-dom';
+
 import { RootState, AppDispatch } from '../app/store';
 import { addTask } from '../features/tasks/tasksSlice';
 import { fetchTags, addTag } from '../features/tags/tagsSlice';
+
+import TaskNameInput from '../components/TaskDetails/TaskNameInput';
+import TagInput from '../components/TaskDetails/TagInput';
+import SaveButton from '../components/TaskDetails/SaveButton';
 import { centerContainerStyles } from '../styles';
-import { Navigate } from 'react-router-dom';
 
 export default function NewTask() {
   const dispatch = useDispatch<AppDispatch>();
-  const { tags, loading, error } = useSelector(
-    (state: RootState) => state.tags
-  );
-
-  const [taskName, setTaskName] = useState<string>('');
-  const [nameError, setNameError] = useState<string>('');
+  const { tags, error } = useSelector((state: RootState) => state.tags);
+  const [taskName, setTaskName] = useState('');
+  const [nameError, setNameError] = useState('');
   const [taskTags, setTaskTags] = useState<string[]>([]);
-  const [newTag, setNewTag] = useState<string>('');
-  const [newTagError, setNewTagError] = useState<string>('');
-  const [saving, setSaving] = useState<boolean>(false);
-  const [redirect, setRedirect] = useState<boolean>(false);
+  const [saving, setSaving] = useState(false);
+  const [redirect, setRedirect] = useState(false);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const nameInput = e.target.value;
@@ -39,72 +27,34 @@ export default function NewTask() {
     setNameError(nameInput.trim() === '' ? 'Name is required' : '');
   };
 
-  const handleNewTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTagInput = e.target.value;
-    const validTagRegex = /^[a-zA-Z\s]+$/;
-    if (newTagInput.length > 16) {
-      setNewTagError('Tag cannot be longer than 16 characters');
-    } else if (validTagRegex.test(newTagInput) || newTagInput === '') {
-      setNewTag(newTagInput);
-      setNewTagError('');
-    } else {
-      setNewTagError('Tags can only contain letters');
-    }
-  };
-
-  const handleAddTagClick = () => {
-    if (!taskTags.includes(newTag.trim())) {
-      setTaskTags([...taskTags, newTag.trim()]);
-      setNewTag('');
-      setNewTagError('');
-    } else {
-      setNewTagError('Tag already exists');
-    }
-  };
-
-  const handleEnterKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleAddTagClick();
-  };
-
-  const handleDeleteTagClick = (tagToDelete: string) => {
-    setTaskTags((prevTags) => prevTags.filter((tag) => tag !== tagToDelete));
-  };
-
   const handleSaveClick = async () => {
     setSaving(true);
+    const tagIdsString = await handleTagIds(taskTags);
+    try {
+      await dispatch(addTask({ name: taskName, tags: tagIdsString }));
+      setRedirect(true);
+    } finally {
+      setSaving(false);
+    }
+  };
 
+  const handleTagIds = async (taskTags: string[]): Promise<string> => {
     const existingTagNames = tags.map((tag) => tag.name);
     const existingTagIds = tags.reduce((acc, tag) => {
       if (taskTags.includes(tag.name)) acc[tag.name] = tag.id;
       return acc;
     }, {} as Record<string, number>);
 
-    const newTags = taskTags.filter((tag) => !existingTagNames.includes(tag));
     const newTagIds: Record<string, number> = {};
-    for (const tag of newTags) {
-      try {
-        const response = await dispatch(addTag(tag)).unwrap();
-        newTagIds[tag] = response.id;
-      } catch (error) {
-        console.error('Error creating tag:', error);
-        setSaving(false);
-        return;
-      }
+    for (const tag of taskTags.filter(
+      (tag) => !existingTagNames.includes(tag)
+    )) {
+      const response = await dispatch(addTag(tag)).unwrap();
+      newTagIds[tag] = response.id;
     }
-
-    const allTagIds = taskTags.map(
-      (tag) => existingTagIds[tag] || newTagIds[tag]
-    );
-    const tagIdsString = allTagIds.join(',');
-
-    try {
-      await dispatch(addTask({ name: taskName, tags: tagIdsString }));
-      setRedirect(true);
-    } catch (error) {
-      console.error('Error creating task:', error);
-    } finally {
-      setSaving(false);
-    }
+    return taskTags
+      .map((tag) => existingTagIds[tag] || newTagIds[tag])
+      .join(',');
   };
 
   useEffect(() => {
@@ -121,93 +71,30 @@ export default function NewTask() {
         Create a New Task
       </Typography>
       <Box sx={{ width: '100%' }}>
-        <TextField
-          id="task-name-input"
-          label="Task name"
-          variant="standard"
+        <TaskNameInput
           value={taskName}
+          error={nameError}
           onChange={handleNameChange}
-          error={!!nameError}
-          helperText={nameError}
-          sx={{ mb: 2 }}
         />
         <Typography id="tags" sx={{ mt: 3 }}>
           Tags:
         </Typography>
-        <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
-          {taskTags.map((tag) => (
-            <Chip
-              key={tag}
-              label={tag}
-              onDelete={() => handleDeleteTagClick(tag)}
-              sx={{ minHeight: 32, lineHeight: '24px' }}
-            />
-          ))}
-        </Stack>
-
-        <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-          <Autocomplete
-            sx={{ width: 1 }}
-            disableCloseOnSelect
-            options={tags
-              .map((tag) => tag.name)
-              .filter((name) => !taskTags.includes(name))
-              .sort((a, b) => a.localeCompare(b))}
-            inputValue={newTag}
-            onInputChange={(event, newInputValue) => {
-              setNewTag(newInputValue);
-              setNewTagError('');
-            }}
-            onChange={(event, newValue) => {
-              if (newValue && !taskTags.includes(newValue)) {
-                setTaskTags([...taskTags, newValue]);
-                setNewTag('');
-              }
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Type tag or choose"
-                variant="filled"
-                error={!!newTagError}
-                helperText={newTagError}
-                onKeyDown={handleEnterKeyDown}
-              />
-            )}
-          />
-          <Button
-            id="add-new-tag-button"
-            variant="outlined"
-            startIcon={<AddIcon />}
-            color="primary"
-            size="large"
-            onClick={handleAddTagClick}
-            disabled={!!newTagError || newTag.trim() === ''}
-            sx={{ alignSelf: 'flex-start' }}
-          >
-            Add
-          </Button>
-        </Stack>
-
+        <TagInput
+          tags={taskTags}
+          existingTags={tags.map((tag) => tag.name)}
+          onAddTag={(tag) => setTaskTags((prev) => [...prev, tag])}
+          onDeleteTag={(tag) =>
+            setTaskTags((prev) => prev.filter((t) => t !== tag))
+          }
+          error={''} // Adjust error handling as needed
+        />
         {error && <Alert severity="error">{error}</Alert>}
-        <Stack
-          direction="row"
-          spacing={2}
-          justifyContent="center"
-          sx={{ mt: 4 }}
-        >
-          <Button
-            id="save-button"
-            type="button"
-            variant="contained"
-            startIcon={<SaveIcon />}
-            color="success"
-            size="large"
+        <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
+          <SaveButton
             onClick={handleSaveClick}
+            loading={saving}
             disabled={!!nameError || taskName.trim() === '' || saving}
-          >
-            {saving ? <CircularProgress size={24} /> : 'Save'}
-          </Button>
+          />
         </Stack>
       </Box>
     </Container>

@@ -18,6 +18,7 @@ import Tags from './routes/tags.tsx';
 import TaskDetails from './routes/task-details.tsx';
 import ErrorPage from './components/ErrorPage/ErrorPage.tsx';
 import NewTask from './routes/new-task.tsx';
+import EditTask from './routes/edit-task.tsx';
 
 // This way is of setting up react-router-dom is based on the official documentation of v6.26.2
 
@@ -44,14 +45,13 @@ const router = createBrowserRouter([
         element: <TaskDetails />,
       },
       {
+        path: 'tasks/:taskId/edit',
+        element: <EditTask />,
+      },
+      {
         path: 'tasks/new',
         element: <NewTask />,
       },
-
-      // {
-      //   path: 'task/:id/edit',
-      //   element: <EditTask />,
-      // },
     ],
   },
 ]);

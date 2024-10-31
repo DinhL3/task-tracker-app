@@ -94,6 +94,8 @@ export default function TaskDetails() {
             startIcon={<EditIcon />}
             color="primary"
             sx={{ mt: 2 }}
+            component={Link}
+            to={`/tasks/${taskId}/edit`}
           >
             Edit task
           </Button>
