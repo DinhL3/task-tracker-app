@@ -64,13 +64,7 @@ export default function Tags() {
           <List sx={{ width: '100%' }}>
             {tags.map((tag) => (
               <React.Fragment key={tag.id}>
-                <ListItem
-                  secondaryAction={
-                    <IconButton edge="end" aria-label="edit">
-                      <EditIcon />
-                    </IconButton>
-                  }
-                >
+                <ListItem>
                   <ListItemText primary={tag.name} />
                 </ListItem>
                 <Divider />
