@@ -15,10 +15,22 @@ export default function About() {
       </Typography>
 
       <Typography variant="h5" gutterBottom>
-        Instructions
+        Instructions and functions
       </Typography>
       <Typography variant="body1" gutterBottom>
-        Use the navigation bar to navigate between pages.
+        • Use the navigation bar to navigate between pages.
+      </Typography>
+      <Typography variant="body1" gutterBottom>
+        • User can view tasks on the home page, drag and drop to reorder them
+        visually, or filter them with tags.
+      </Typography>
+      <Typography variant="body1" gutterBottom>
+        • User can edit existing task (by clicking on the task), delete task
+        entirely, or create new task.
+      </Typography>
+      <Typography variant="body1" gutterBottom>
+        • User can freely edit the name of the task, add or remove tags. Use the
+        dropdown to choose from existing tags, or create a new tag.
       </Typography>
 
       <Typography variant="h5" gutterBottom>
@@ -42,7 +54,7 @@ export default function About() {
         Estimated Working Hours
       </Typography>
       <Typography variant="body1" gutterBottom>
-        Approximately XX hours were spent working on this programming
+        Approximately 28 hours were spent working on this programming
         assignment.
       </Typography>
 
