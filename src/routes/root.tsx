@@ -1,4 +1,3 @@
-// External libraries
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,7 +17,6 @@ import {
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 
-// Internal modules
 import { centerContainerStyles } from '../styles';
 import { RootState, AppDispatch } from '../app/store';
 import { fetchTasks } from '../features/tasks/tasksSlice';
@@ -31,22 +29,43 @@ export default function Root() {
   );
   const { tags } = useSelector((state: RootState) => state.tags);
 
-  // State to hold selected tags
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [reorderedTasks, setReorderedTasks] = useState(tasks);
 
   useEffect(() => {
     dispatch(fetchTasks());
     dispatch(fetchTags());
   }, [dispatch]);
 
-  // Filter tasks based on selected tags
+  useEffect(() => {
+    setReorderedTasks(tasks); // Update reorderedTasks whenever tasks are fetched or updated
+  }, [tasks]);
+
   const filteredTasks = selectedTags.length
-    ? tasks.filter((task) =>
+    ? reorderedTasks.filter((task) =>
         selectedTags.every((tagId) => task.tags.split(',').includes(tagId))
       )
-    : tasks;
+    : reorderedTasks;
 
-  // If there is an error, show only the error and nothing else
+  const handleDragStart = (event: React.DragEvent, index: number) => {
+    event.dataTransfer.setData('taskIndex', index.toString());
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+  };
+
+  const handleDrop = (event: React.DragEvent, index: number) => {
+    const draggedIndex = Number(event.dataTransfer.getData('taskIndex'));
+    if (draggedIndex === index) return;
+
+    const updatedTasks = [...reorderedTasks];
+    const [draggedTask] = updatedTasks.splice(draggedIndex, 1); // Remove dragged task
+    updatedTasks.splice(index, 0, draggedTask); // Insert dragged task at new index
+    setReorderedTasks(updatedTasks);
+  };
+
+  // Display error or loading states
   if (error) {
     return (
       <Container maxWidth="sm" sx={centerContainerStyles}>
@@ -57,7 +76,6 @@ export default function Root() {
     );
   }
 
-  // If loading, show the spinner
   if (loading) {
     return (
       <Container maxWidth="sm" sx={centerContainerStyles}>
@@ -68,7 +86,6 @@ export default function Root() {
     );
   }
 
-  // Once loaded, if no tasks are available, show a message
   return (
     <Container maxWidth="sm" sx={centerContainerStyles}>
       <Typography variant="h3" gutterBottom>
@@ -85,7 +102,6 @@ export default function Root() {
         Add new task
       </Button>
 
-      {/* Tag Filter */}
       <Autocomplete
         multiple
         id="tags-outlined"
@@ -101,12 +117,27 @@ export default function Root() {
         sx={{ mt: 2, width: 1 }}
       />
 
-      {/* Task List */}
+      <Typography
+        variant="caption"
+        gutterBottom
+        color="secondary"
+        sx={{ mt: 2 }}
+      >
+        You can drag and drop the tasks to reorder (before filtering)
+      </Typography>
+
       {filteredTasks.length > 0 ? (
         <List aria-label="tasklist" sx={{ width: '100%', mt: 2 }}>
-          {filteredTasks.map((task) => (
+          {filteredTasks.map((task, index) => (
             <React.Fragment key={task.id}>
-              <ListItemButton component={Link} to={`/tasks/${task.id}`}>
+              <ListItemButton
+                component={Link}
+                to={`/tasks/${task.id}`}
+                draggable
+                onDragStart={(event) => handleDragStart(event, index)}
+                onDragOver={handleDragOver}
+                onDrop={(event) => handleDrop(event, index)}
+              >
                 <ListItemText primary={task.name} />
               </ListItemButton>
               <Divider />
